@@ -19,7 +19,13 @@ $link_target="main";
 
 
 <div class="navbarlogo">
-<a href="http://www.nagios.org" target="_blank"><img src="images/sblogo.png" height="39" width="140" border="0" alt="Nagios" /></a>
+<?php /*
+<a href="http://www.nagios.org" target="_blank">
+*/ ?>
+    <img src="images/sblogo.png" height="39" width="140" border="0" alt="Nagios" />
+<?php /*
+</a>
+*/ ?>
 </div>
 
 <?php /*
