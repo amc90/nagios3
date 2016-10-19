@@ -73,7 +73,7 @@ class StatusContext(nagiosplugin.Context):
 @nagiosplugin.guarded
 def main():
     argp = argparse.ArgumentParser()
-    argp.add_argument('-p', '--path', default='/root/server_backup',
+    argp.add_argument('-p', '--path', default='/root/server-backup',
                       help='where server_backup is installed'),
     argp.add_argument('-w', '--warning', metavar='RANGE',
                       help='warning if last backup is older than these hours'),
