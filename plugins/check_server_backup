@@ -1,0 +1,105 @@
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
+# License AGPL-3: Antonio Espinosa <antonio.espinosa@tecnativa.com>
+
+import os
+import time
+import argparse
+import logging
+import nagiosplugin
+
+_log = logging.getLogger('nagiosplugin')
+
+
+class Backup(nagiosplugin.Resource):
+
+    def __init__(self, path):
+        self.path = path
+        self.status_msg = 'Unknown'
+
+    def probe(self):
+        status = False
+        last = 0
+        duration = 0
+        last_status = os.path.join(self.path, 'last_status')
+        now = time.time()
+        try:
+            with open(last_status) as last_file:
+                parts = last_file.readline().split(';')
+                start = int(parts[0])
+                end = int(parts[1])
+                last = round((now - start) / 3600., 2)
+                duration = int((end - start) / 60.)
+                self.status_msg = parts[2].strip()
+                status = (self.status_msg == 'Success')
+        except Exception as e:
+            self.status_msg = 'Exception: %s' % str(e)
+        return [
+            nagiosplugin.Metric('status', status),
+            nagiosplugin.Metric('last', last, min=0, uom='hours'),
+            nagiosplugin.Metric('duration', duration, min=0, uom='minutes'),
+        ]
+
+
+class BackupSummary(nagiosplugin.Summary):
+
+    def problem(self, results):
+        return self.ok(results)
+
+    def ok(self, results):
+        super(BackupSummary, self).ok(results)
+        msg = []
+        if 'status' in results:
+            msg.append(
+                "%s" % results['status'].resource.status_msg)
+        if 'last' in results:
+            msg.append(
+                "last %s hours ago" % results['last'].metric.value)
+        if 'duration' in results:
+            msg.append(
+                "duration %s minutes" % results['duration'].metric.value)
+        return ', '.join(msg)
+
+
+class StatusContext(nagiosplugin.Context):
+
+    def evaluate(self, metric, resource):
+        state = (nagiosplugin.state.Ok if metric.value
+                 else nagiosplugin.state.Critical)
+        hint = self.describe(metric)
+        return self.result_cls(state, hint, metric)
+
+
+@nagiosplugin.guarded
+def main():
+    argp = argparse.ArgumentParser()
+    argp.add_argument('-p', '--path', default='/root/server_backup',
+                      help='where server_backup is installed'),
+    argp.add_argument('-w', '--warning', metavar='RANGE',
+                      help='warning if last backup is older than these hours'),
+    argp.add_argument('-c', '--critical', metavar='RANGE',
+                      help='critical if last backup is older than these hours')
+    argp.add_argument('-W', '--warning-duration', metavar='RANGE',
+                      help='warning if backup duration is greater than '
+                           'these minutes')
+    argp.add_argument('-C', '--critical-duration', metavar='RANGE',
+                      help='critical if backup duration is greater than '
+                           'these minutes')
+    argp.add_argument('-v', '--verbose', action='count', default=0,
+                      help='increase output verbosity (use up to 3 times)')
+    args = argp.parse_args()
+    check = nagiosplugin.Check(
+        Backup(args.path),
+        nagiosplugin.ScalarContext(
+            'last', args.warning, args.critical,
+            fmt_metric='last {value} {oum} ago'),
+        nagiosplugin.ScalarContext(
+            'duration', args.warning_duration, args.critical_duration,
+            fmt_metric='duration {value} {oum}'),
+        StatusContext('status'),
+        BackupSummary()
+    )
+    check.main(verbose=args.verbose)
+
+if __name__ == '__main__':
+    main()
