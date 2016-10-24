@@ -24,10 +24,10 @@ use Carp;
 use Data::Dumper;
 use English qw(-no_match_vars);
 use File::Basename;
-use Monitoring::Plugin::Threshold;
-use Monitoring::Plugin;
-use Monitoring::Plugin::Range;
-use Monitoring::Plugin::Getopt;
+use Nagios::Plugin::Threshold;
+use Nagios::Plugin;
+use Nagios::Plugin::Range;
+use Nagios::Plugin::Getopt;
 use Readonly;
 
 ################################################################################
