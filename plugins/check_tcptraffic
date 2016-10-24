@@ -477,14 +477,14 @@ sub verbose {
 # Initialization
 
 $os_64_bit  = 0;
-$plugin     = Monitoring::Plugin->new( shortname => 'TCPTRAFFIC' );
+$plugin     = Nagios::Plugin->new( shortname => 'TCPTRAFFIC' );
 $status     = 0;
 $status_msg = q{};
 
 ########################
 # Command line arguments
 
-$options = Monitoring::Plugin::Getopt->new(
+$options = Nagios::Plugin::Getopt->new(
     usage   => 'Usage: %s [OPTIONS]',
     version => $VERSION,
     url     => 'https://github.com/matteocorti/check_tcptraffic',
@@ -550,13 +550,13 @@ if ( !running_on_linux() ) {
 
 # parse the critical and warning ranges
 my $critical_range =
-  Monitoring::Plugin::Range->parse_range_string( $options->critical() );
+  Nagios::Plugin::Range->parse_range_string( $options->critical() );
 if ( !( $critical_range && $critical_range->is_set() ) ) {
     $plugin->nagios_exit( UNKNOWN, 'Could not parse "critical"' );
 }
 
 my $warning_range =
-  Monitoring::Plugin::Range->parse_range_string( $options->warning() );
+  Nagios::Plugin::Range->parse_range_string( $options->warning() );
 if ( !( $warning_range && $warning_range->is_set() ) ) {
     $plugin->nagios_exit( UNKNOWN, 'Could not parse "warning"' );
 }
@@ -581,7 +581,7 @@ else {
 verbose
   "the counters can hold data for $max_check_time seconds before overflow\n";
 
-$threshold = Monitoring::Plugin::Threshold->set_thresholds(
+$threshold = Nagios::Plugin::Threshold->set_thresholds(
     warning  => $warning_range,
     critical => $critical_range,
 );
