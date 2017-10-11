@@ -22,6 +22,7 @@ function printHelp {
   echo -e "Example: $SCRIPT -w 80 -c 90 -W 40 -C 60"\\n
   echo -e \\n\\n"Author: Lukasz Gogolin, lukasz.gogolin@gmail.com"
   echo -e "Git: http://bitbucket.org/lgogolin/nagios_plugins"
+  echo -e "Fork at Git: https://github.com/amc90/nagios3"
   exit 1
 }
 
